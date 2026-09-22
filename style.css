@@ -1,0 +1,506 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Tahoma, sans-serif;
+}
+
+body {
+  overflow: hidden;
+}
+
+.screen {
+  display: none;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+.screen.active {
+  display: block;
+}
+
+.bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.overlay {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: white;
+  text-shadow: 2px 2px 6px black;
+  padding-top: 4vh;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.char-img {
+  width: 150px;
+  margin: 20px auto;
+  display: block;
+}
+
+
+/* =========================================
+   الكتاب - كبير على اليسار مع تأثير الطفو
+========================================= */
+
+.small-icon {
+  position: fixed;
+
+  left: 30px;
+  top: 50%;
+
+  width: 150px;
+  height: 150px;
+
+  object-fit: contain;
+
+  z-index: 5;
+
+  animation: bookFloat 2.5s ease-in-out infinite;
+
+  filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.4));
+}
+
+@keyframes bookFloat {
+
+  0% {
+    transform: translateY(-50%) rotate(-3deg);
+  }
+
+  50% {
+    transform: translateY(calc(-50% - 15px)) rotate(3deg);
+  }
+
+  100% {
+    transform: translateY(-50%) rotate(-3deg);
+  }
+
+}
+
+
+/* =========================================
+   الأزرار
+========================================= */
+
+button {
+  padding: 12px 22px;
+
+  font-size: 18px;
+
+  border-radius: 12px;
+
+  border: none;
+
+  background: #ffcc00;
+
+  cursor: pointer;
+
+  margin: 6px;
+}
+
+button:hover {
+  background: #ffaa00;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   النقاط
+========================================= */
+
+#score-box {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+#question-container h2 {
+  font-size: 24px;
+  margin: 12px 0;
+}
+
+
+/* =========================================
+   اسم الطالب
+========================================= */
+
+#player-name {
+  display: block;
+
+  width: 80%;
+  max-width: 450px;
+
+  padding: 14px 18px;
+
+  margin: 15px auto 20px;
+
+  border: 3px solid white;
+
+  border-radius: 15px;
+
+  font-size: 22px;
+
+  text-align: center;
+
+  direction: rtl;
+
+  outline: none;
+}
+
+#player-name::placeholder {
+  color: #777;
+}
+
+
+/* =========================================
+   صورة الصح والخطأ والوحش
+========================================= */
+
+.feedback-icon {
+  display: none;
+
+  width: 150px;
+  height: 150px;
+
+  object-fit: contain;
+
+  margin: 8px auto;
+}
+
+.feedback-icon.show {
+  display: block;
+}
+
+
+/* =========================================
+   شاشة النهاية
+========================================= */
+
+#end-screen .overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  justify-content: flex-start;
+
+  padding-top: 2vh;
+
+  height: 92vh;
+
+  overflow-y: auto;
+}
+
+
+/* الصور الموجودة أعلى شاشة النهاية */
+
+.end-icons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+
+  order: 1;
+}
+
+.end-icons img {
+  width: 100px;
+}
+
+
+/* عنوان النهاية */
+
+#end-screen h1 {
+  order: 2;
+
+  font-size: 32px;
+
+  margin: 5px 0 10px;
+}
+
+
+/* النتيجة */
+
+#final-score {
+  order: 3;
+
+  font-size: 24px;
+
+  font-weight: bold;
+
+  margin: 8px 0;
+}
+
+
+/* =========================================
+   الشهادة
+========================================= */
+
+.certificate-wrapper {
+  position: relative;
+
+  display: inline-block;
+
+  order: 5;
+
+  margin: 5px auto;
+
+  text-align: center;
+}
+
+.cert-img {
+  width: 360px;
+
+  max-width: 80vw;
+
+  margin: 0 auto;
+
+  display: block;
+}
+
+
+/* اسم الطالب داخل الشهادة */
+
+#certificate-name {
+  position: absolute;
+
+  top: 48%;
+  left: 50%;
+
+  transform: translate(-50%, -50%);
+
+  width: 80%;
+
+  text-align: center;
+
+  font-size: 30px;
+
+  font-weight: bold;
+
+  color: #222;
+
+  direction: rtl;
+
+  text-shadow: none;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   صورة النجاح / الرسوب
+========================================= */
+
+#end-result-image {
+  width: 260px !important;
+
+  max-width: 70vw !important;
+
+  height: auto;
+
+  object-fit: contain;
+
+  margin: 5px auto !important;
+
+  display: block;
+
+  z-index: 5;
+}
+
+
+/* النجاح فوق الشهادة */
+
+#end-screen:not(:has(.bg-img[src*="fail_bg"])) #end-result-image {
+  order: 4;
+
+  margin-bottom: 0 !important;
+}
+
+
+/* الرسوب تحت الشهادة */
+
+#end-screen:has(.bg-img[src*="fail_bg"]) #end-result-image {
+  order: 6;
+
+  width: 280px !important;
+
+  max-width: 75vw !important;
+
+  margin-top: 5px !important;
+}
+
+
+/* =========================================
+   زر إعادة اللعبة
+========================================= */
+
+#restart-btn {
+  order: 7;
+
+  margin-top: 8px;
+}
+
+
+/* =========================================
+   زر كتم الصوت
+========================================= */
+
+#mute-btn {
+  position: fixed;
+
+  top: 15px;
+  left: 15px;
+
+  z-index: 10;
+
+  width: 50px;
+  height: 50px;
+
+  border-radius: 50%;
+
+  font-size: 20px;
+
+  padding: 0;
+
+  margin: 0;
+}
+
+
+/* =========================================
+   ترتيب الجملة
+========================================= */
+
+.build-area {
+  min-height: 60px;
+
+  background: rgba(255,255,255,0.15);
+
+  border: 2px dashed white;
+
+  border-radius: 12px;
+
+  margin: 15px auto;
+
+  width: 90%;
+
+  max-width: 500px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  align-items: center;
+
+  padding: 10px;
+
+  gap: 8px;
+}
+
+.build-word {
+  background: white;
+
+  color: black;
+
+  padding: 8px 14px;
+
+  border-radius: 8px;
+
+  font-size: 18px;
+}
+
+.word-bank {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  margin: 10px auto;
+
+  max-width: 500px;
+}
+
+.word-btn {
+  background: white;
+  color: black;
+}
+
+.correct-answer-line {
+  margin-top: 10px;
+
+  font-size: 18px;
+
+  background: rgba(0,0,0,0.3);
+
+  padding: 8px;
+
+  border-radius: 8px;
+
+  display: inline-block;
+}
+
+
+/* =========================================
+   الإعراب
+========================================= */
+
+.parsing-sentence {
+  font-size: 28px;
+
+  margin: 10px 0 20px;
+}
+
+.parsing-part {
+  margin-bottom: 18px;
+}
+
+.parsing-part h3 {
+  font-size: 18px;
+
+  margin-bottom: 8px;
+}
+
+.parsing-options {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  max-width: 500px;
+
+  margin: 0 auto;
+}
+
+.parsing-options button {
+  background: white;
+
+  color: black;
+}
+
+.correct-choice {
+  background: #4caf50 !important;
+
+  color: white !important;
+}
+
+.wrong-choice {
+  background: #e53935 !important;
+
+  color: white !important;
+}
