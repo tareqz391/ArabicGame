@@ -7,7 +7,7 @@ import { Footprints } from '../fx/Footprints.js';
 import { Player } from './Player.js';
 import { CameraRig } from './CameraRig.js';
 import { Interaction } from './Interact.js';
-import { Flags, Save, Settings } from './State.js';
+import { Flags, Save, Settings, Session } from './State.js';
 import { t } from './i18n.js';
 import { sound } from './Sound.js';
 
@@ -110,7 +110,7 @@ export class Game {
     this._respawning = true;
     this.input.enabled = false;
     await this.ui.fadeTo(1, 1.2);
-    sessionStorage.setItem('tls.boot', 'continue');
+    Session.set('tls.boot', 'continue');
     location.reload();
   }
 

@@ -49,3 +49,19 @@ export const Settings = {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(this._d)); } catch { /* ignore */ }
   },
 };
+
+/** sessionStorage can throw in sandboxed frames; fall back to window.name (survives reload). */
+export const Session = {
+  get(k) {
+    try { const v = sessionStorage.getItem(k); if (v !== null) return v; } catch { /* sandboxed */ }
+    try { return JSON.parse(window.name || '{}')[k] ?? null; } catch { return null; }
+  },
+  set(k, v) {
+    try { sessionStorage.setItem(k, v); } catch { /* sandboxed */ }
+    try { const d = JSON.parse(window.name || '{}'); d[k] = v; window.name = JSON.stringify(d); } catch { /* ignore */ }
+  },
+  remove(k) {
+    try { sessionStorage.removeItem(k); } catch { /* sandboxed */ }
+    try { const d = JSON.parse(window.name || '{}'); delete d[k]; window.name = JSON.stringify(d); } catch { /* ignore */ }
+  },
+};

@@ -2,7 +2,7 @@ import { Assets } from './engine/Assets.js';
 import { Game } from './game/Game.js';
 import { StationLevel } from './levels/Station.js';
 import { UI } from './ui/UI.js';
-import { Flags, Save, Settings } from './game/State.js';
+import { Flags, Save, Settings, Session } from './game/State.js';
 import { setLang, getLang, t } from './game/i18n.js';
 import { sound } from './game/Sound.js';
 import * as THREE from 'three';
@@ -16,8 +16,8 @@ async function boot() {
   await document.fonts.load('40px Amiri').catch(() => {});
   await assets.loadAll(['station', 'nature', 'train_car', 'adam'], (p) => ui.setProgress(p));
 
-  const bootMode = sessionStorage.getItem('tls.boot');
-  sessionStorage.removeItem('tls.boot');
+  const bootMode = Session.get('tls.boot');
+  Session.remove('tls.boot');
   const save = Save.read();
   if (bootMode === 'continue' && save) Flags.load(save.flags);
   else Flags.reset();
