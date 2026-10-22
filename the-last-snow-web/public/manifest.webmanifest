@@ -1,0 +1,9 @@
+{
+  "name": "The Last Snow — الثلج الأخير",
+  "short_name": "The Last Snow",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0c1322",
+  "theme_color": "#0c1322",
+  "start_url": "./index.html"
+}

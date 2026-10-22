@@ -1,0 +1,5 @@
+node_modules/
+dist/
+tools/blender/_tex/
+tools/blender/__pycache__/
+*.log
