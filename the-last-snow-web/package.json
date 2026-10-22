@@ -1,10 +1,15 @@
 {
-  "name": "the-last-snow-web",
+  "name": "the-last-snow",
   "version": "1.0.0",
-  "description": "",
+  "description": "The Last Snow - cinematic 2.5D winter mystery (three.js)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "build:artifact": "VITE_MODEL_EXT=json vite build && node tools/make_artifact.mjs",
+    "assets": "cd tools/blender && for f in asset_train asset_station asset_nature asset_characters; do python $f.py; done",
+    "test": "node tools/test/play.mjs http://localhost:4173/ test-shots puzzle"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +20,6 @@
   "devDependencies": {
     "playwright": "^1.48.2",
     "vite": "^5.4.10"
-  }
+  },
+  "type": "module"
 }

@@ -378,7 +378,7 @@ def export_glb(name, objects=None, animations=False, extra=None):
         export_apply=True,
         export_yup=True,
         export_animations=animations,
-        export_image_format="AUTO",
+        export_image_format="WEBP",
         export_extras=True,
         export_lights=False,
         export_cameras=False,

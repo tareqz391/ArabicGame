@@ -12,7 +12,8 @@ export class Assets {
   async loadAll(files, onProgress) {
     let done = 0;
     await Promise.all(files.map(async (f) => {
-      const url = `${import.meta.env.BASE_URL}models/${f}.glb`;
+      // GLB by default; the Artifact build uses glTF JSON (see tools/make_artifact.mjs)
+      const url = `${import.meta.env.BASE_URL}models/${f}.${import.meta.env.VITE_MODEL_EXT || "glb"}`;
       this.gltfs[f] = await this.loader.loadAsync(url);
       this.gltfs[f].scene.traverse((o) => {
         if (o.isMesh) {

@@ -103,7 +103,7 @@ export class StationLevel {
     hourHand.rotation.z = THREE.MathUtils.degToRad(0.5);
     minHand.rotation.z = THREE.MathUtils.degToRad(6);
     col.addCentered(clock.x, 0, clock.z, 0.5, 4.5, 0.5);
-    this.clockLight = this.lights.add({ pos: new THREE.Vector3(clock.x, 3.9, clock.z + 0.8), color: 0xfff0d0, intensity: 1.4, distance: 4, on: true, flicker: 0.1 });
+    this.clockLight = this.lights.add({ pos: new THREE.Vector3(clock.x, 3.9, clock.z + 0.8), color: 0xfff0d0, intensity: 0.6, distance: 4, on: true, flicker: 0.1 });
 
     // platform furniture
     const benches = [[-6.2, 1.5], [1.8, 1.5]];
