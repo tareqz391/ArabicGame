@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>استوديو المونتاج — محرر فيديو احترافي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@400;700;900&family=Amiri:wght@400;700&family=Reem+Kufi:wght@400;700&family=Lalezar&family=Changa:wght@400;700&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🎬</span>
+    <span class="brand-name">استوديو المونتاج</span>
+    <input id="projectName" class="project-name" value="مشروع جديد" title="اسم المشروع">
+  </div>
+  <div class="top-actions">
+    <button id="btnNew" class="btn ghost" title="مشروع جديد">📄 جديد</button>
+    <button id="btnUndo" class="btn ghost icon" title="تراجع (Ctrl+Z)">↶</button>
+    <button id="btnRedo" class="btn ghost icon" title="إعادة (Ctrl+Y)">↷</button>
+    <span id="saveStatus" class="save-status">✓ محفوظ</span>
+    <button id="btnHelp" class="btn ghost icon" title="اختصارات لوحة المفاتيح">⌨️</button>
+    <button id="btnExport" class="btn primary">⬇️ تصدير الفيديو</button>
+  </div>
+</header>
+
+<main class="workspace">
+  <!-- مكتبة الوسائط -->
+  <aside class="panel library">
+    <nav class="tabs">
+      <button class="tab active" data-tab="media">🎞️ الوسائط</button>
+      <button class="tab" data-tab="text">🔤 النصوص</button>
+      <button class="tab" data-tab="elements">🎨 العناصر</button>
+    </nav>
+    <div class="tab-body active" id="tab-media">
+      <label class="import-btn">➕ استيراد ملفات
+        <input type="file" id="fileInput" multiple accept="video/*,audio/*,image/*" hidden>
+      </label>
+      <div class="drop-hint" id="dropHint">اسحب ملفات الفيديو والصوت والصور وأفلتها هنا أو في أي مكان بالصفحة</div>
+      <div id="mediaGrid" class="media-grid"></div>
+    </div>
+    <div class="tab-body" id="tab-text">
+      <p class="muted">انقر على نمط لإضافته عند مؤشر التشغيل.</p>
+      <div id="textPresets" class="preset-grid"></div>
+    </div>
+    <div class="tab-body" id="tab-elements">
+      <h4>خلفيات ملونة</h4>
+      <div id="colorPresets" class="color-grid"></div>
+      <h4>نصائح</h4>
+      <ul class="tips">
+        <li>اسحب الوسائط إلى المسارات في الخط الزمني.</li>
+        <li>اسحب أطراف المقطع لقصّه، و<b>S</b> لتقسيمه عند المؤشر.</li>
+        <li>اسحب العناصر داخل نافذة المعاينة لتحريكها، واستخدم عجلة الفأرة لتكبيرها.</li>
+        <li>الانتقالات والحركات من قسم «الحركة» في لوحة الخصائص.</li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- المعاينة -->
+  <section class="preview-area">
+    <div class="preview-stage" id="previewStage">
+      <canvas id="canvas" width="1920" height="1080"></canvas>
+    </div>
+    <div class="transport">
+      <div class="time" dir="ltr"><span id="timeCur">00:00.00</span> <span class="muted">/</span> <span id="timeTotal">00:00.00</span></div>
+      <div class="controls" dir="ltr">
+        <button id="btnStart" title="البداية (Home)">⏮</button>
+        <button id="btnPrevFrame" title="إطار سابق (←)">⏪</button>
+        <button id="btnPlay" class="play" title="تشغيل / إيقاف (مسافة)">▶</button>
+        <button id="btnNextFrame" title="إطار تالٍ (→)">⏩</button>
+        <button id="btnEnd" title="النهاية (End)">⏭</button>
+      </div>
+      <div class="transport-side">
+        <label class="vol" title="مستوى الصوت العام">🔊 <input type="range" id="masterVol" min="0" max="100" value="100"></label>
+        <button id="btnSnapshot" title="حفظ لقطة PNG">📷</button>
+        <button id="btnFullscreen" title="ملء الشاشة">⛶</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- الخصائص -->
+  <aside class="panel inspector">
+    <div class="panel-title" id="inspectorTitle">إعدادات المشروع</div>
+    <div id="inspector" class="inspector-body"></div>
+  </aside>
+</main>
+
+<!-- الخط الزمني -->
+<section class="timeline" id="timeline">
+  <div class="tl-resizer" id="tlResizer" title="اسحب لتغيير الارتفاع"></div>
+  <div class="tl-toolbar">
+    <button class="tbtn" id="btnSplit" title="تقسيم عند المؤشر (S)">✂️ تقسيم</button>
+    <button class="tbtn" id="btnDelete" title="حذف (Delete)">🗑 حذف</button>
+    <button class="tbtn" id="btnRipple" title="حذف وسد الفراغ (Shift+Delete)">⇤ حذف وسد الفراغ</button>
+    <button class="tbtn" id="btnDuplicate" title="تكرار (Ctrl+D)">⧉ تكرار</button>
+    <span class="sep"></span>
+    <button class="tbtn" id="btnAddVisual" title="إضافة مسار فيديو">➕ مسار فيديو</button>
+    <button class="tbtn" id="btnAddAudio" title="إضافة مسار صوت">➕ مسار صوت</button>
+    <span class="sep"></span>
+    <button class="tbtn toggle active" id="btnSnap" title="الالتقاط المغناطيسي">🧲 التقاط</button>
+    <span class="grow"></span>
+    <button class="tbtn icon" id="btnZoomOut" title="تصغير (-)">−</button>
+    <input type="range" id="zoomSlider" min="0" max="100" value="45" title="تكبير الخط الزمني">
+    <button class="tbtn icon" id="btnZoomIn" title="تكبير (+)">+</button>
+    <button class="tbtn" id="btnFit" title="ملاءمة المشروع">↔ ملاءمة</button>
+  </div>
+  <div class="tl-body" dir="ltr">
+    <div class="tl-corner"></div>
+    <div class="tl-ruler" id="rulerWrap"><canvas id="ruler"></canvas></div>
+    <div class="tl-headers" id="trackHeaders"></div>
+    <div class="tl-scroll" id="tlScroll">
+      <div class="tl-content" id="tlContent">
+        <div id="lanes"></div>
+        <div class="snap-line" id="snapLine"></div>
+        <div class="playhead" id="playhead"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- نافذة التصدير -->
+<div class="modal" id="exportModal" hidden>
+  <div class="modal-card">
+    <h3>⬇️ تصدير الفيديو</h3>
+    <div id="exportSetup">
+      <div class="field"><label>الدقة</label><div id="expRes" class="readonly" dir="ltr"></div></div>
+      <div class="field"><label>الجودة</label>
+        <select id="expQuality">
+          <option value="4000000">متوسطة (4 Mbps)</option>
+          <option value="8000000" selected>عالية (8 Mbps)</option>
+          <option value="16000000">عالية جداً (16 Mbps)</option>
+          <option value="30000000">احترافية (30 Mbps)</option>
+        </select>
+      </div>
+      <div class="field"><label>الصيغة</label><select id="expFormat"></select></div>
+      <div class="field"><label>النطاق</label>
+        <select id="expRange">
+          <option value="all">المشروع كاملاً</option>
+          <option value="sel">المقطع المحدد فقط</option>
+        </select>
+      </div>
+      <p class="muted small">يتم التصدير داخل المتصفح بالسرعة الحقيقية للفيديو. أبقِ هذه الصفحة ظاهرة حتى انتهاء التصدير.</p>
+      <div class="modal-actions">
+        <button class="btn ghost" data-close>إلغاء</button>
+        <button class="btn primary" id="btnStartExport">بدء التصدير</button>
+      </div>
+    </div>
+    <div id="exportProgress" hidden>
+      <div class="progress"><div id="expBar"></div></div>
+      <div id="expText" class="exp-text">0%</div>
+      <div class="modal-actions"><button class="btn danger" id="btnCancelExport">إيقاف التصدير</button></div>
+    </div>
+    <div id="exportDone" hidden>
+      <video id="expVideo" controls></video>
+      <div class="modal-actions">
+        <button class="btn ghost" data-close>إغلاق</button>
+        <a id="expDownload" class="btn primary" download>💾 تنزيل الملف</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- نافذة الاختصارات -->
+<div class="modal" id="helpModal" hidden>
+  <div class="modal-card">
+    <h3>⌨️ اختصارات لوحة المفاتيح</h3>
+    <table class="keys">
+      <tr><td><kbd>مسافة</kbd></td><td>تشغيل / إيقاف</td></tr>
+      <tr><td><kbd>S</kbd></td><td>تقسيم المقطع عند المؤشر</td></tr>
+      <tr><td><kbd>Delete</kbd></td><td>حذف المقطع المحدد</td></tr>
+      <tr><td><kbd>Shift + Delete</kbd></td><td>حذف وسد الفراغ</td></tr>
+      <tr><td><kbd>Ctrl + Z</kbd> / <kbd>Ctrl + Y</kbd></td><td>تراجع / إعادة</td></tr>
+      <tr><td><kbd>Ctrl + C</kbd> / <kbd>Ctrl + V</kbd></td><td>نسخ / لصق عند المؤشر</td></tr>
+      <tr><td><kbd>Ctrl + D</kbd></td><td>تكرار المقطع</td></tr>
+      <tr><td><kbd>←</kbd> / <kbd>→</kbd></td><td>إطار واحد (مع Shift: 10 إطارات)</td></tr>
+      <tr><td><kbd>Home</kbd> / <kbd>End</kbd></td><td>البداية / النهاية</td></tr>
+      <tr><td><kbd>+</kbd> / <kbd>-</kbd></td><td>تكبير / تصغير الخط الزمني</td></tr>
+      <tr><td><kbd>Ctrl + عجلة الفأرة</kbd></td><td>تكبير الخط الزمني</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>إلغاء التحديد</td></tr>
+    </table>
+    <div class="modal-actions"><button class="btn primary" data-close>حسناً</button></div>
+  </div>
+</div>
+
+<div id="toasts" class="toasts"></div>
+<div id="dropOverlay" class="drop-overlay" hidden><div>أفلت الملفات للاستيراد</div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
