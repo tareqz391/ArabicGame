@@ -4,11 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>لوحة التحكم - طلباتي</title>
+  <link rel="manifest" href="/admin.webmanifest">
+  <link rel="icon" type="image/png" href="/icons/admin-192.png">
+  <link rel="apple-touch-icon" href="/icons/admin-apple.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="إدارة طلباتي">
+  <meta name="theme-color" content="#1d1d27">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div id="root"></div>
   <script src="/common.js"></script>
   <script src="/admin.js"></script>
+  <script>if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});</script>
 </body>
 </html>

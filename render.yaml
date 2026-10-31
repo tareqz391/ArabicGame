@@ -1,0 +1,9 @@
+# نشر سيرفر تطبيق طلباتي على Render.com (New > Blueprint)
+services:
+  - type: web
+    name: talabati
+    runtime: node
+    rootDir: food-app
+    buildCommand: echo "لا يحتاج بناء"
+    startCommand: node server.js
+    plan: free

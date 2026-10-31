@@ -1,0 +1,16 @@
+{
+  "id": "/admin",
+  "name": "طلباتي - لوحة التحكم",
+  "short_name": "إدارة طلباتي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "background_color": "#1d1d27",
+  "theme_color": "#1d1d27",
+  "icons": [
+    { "src": "/icons/admin-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/admin-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

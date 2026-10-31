@@ -1,0 +1,86 @@
+name: بناء تطبيقات أندرويد (الزبائن + الإدارة)
+
+on:
+  # تشغيل يدوي من تبويب Actions
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: 'رابط السيرفر (اتركه فارغاً لاستخدام food-app/mobile/server-url.txt)'
+        required: false
+  # أو تلقائياً عند تعديل ملف رابط السيرفر أو كود التطبيق
+  push:
+    paths:
+      - 'food-app/mobile/**'
+      - '.github/workflows/android-apps.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.url.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: url
+        env:
+          INPUT_URL: ${{ inputs.server_url }}
+        run: |
+          URL="${INPUT_URL:-$(head -n1 food-app/mobile/server-url.txt | tr -d '[:space:]')}"
+          URL="${URL%/}"
+          if [[ ! "$URL" =~ ^https?://[A-Za-z0-9.-]+(:[0-9]+)?(/[A-Za-z0-9._~/-]*)?$ ]] || [[ "$URL" == *YOUR-SERVER-URL* ]]; then
+            echo "::warning::لم يتم ضبط رابط السيرفر. ضع رابط السيرفر في food-app/mobile/server-url.txt ثم أعد التشغيل."
+            URL=""
+          fi
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: config
+    if: needs.config.outputs.url != ''
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [customer, admin]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: بناء APK
+        env:
+          SERVER_URL: ${{ needs.config.outputs.url }}
+          OUT_DIR: ${{ github.workspace }}/dist
+          VERSION_CODE: ${{ github.run_number }}
+        run: bash food-app/mobile/build-android.sh "${{ matrix.app }}" "$SERVER_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: talabati-${{ matrix.app }}
+          path: dist/*.apk
+
+  release:
+    needs: [config, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apps-v${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: تطبيقات طلباتي - إصدار ${{ github.run_number }}
+          files: dist/*.apk
+          body: |
+            📱 **talabati-customer.apk**: تطبيق الزبائن
+            🛠️ **talabati-admin.apk**: تطبيق لوحة التحكم
+
+            السيرفر: ${{ needs.config.outputs.url }}
+
+            للتثبيت: نزّل ملف APK على جوال أندرويد، افتحه، واسمح بالتثبيت من مصادر غير معروفة إذا طُلب منك.
