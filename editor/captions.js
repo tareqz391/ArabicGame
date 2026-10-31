@@ -201,7 +201,7 @@ function killWorker() {
 function getWorker(model, onProgress) {
   if (capWorker && capWorkerModel === model) return capWorkerReady;
   killWorker();
-  capWorker = new Worker('whisper-worker.js', { type: 'module' });
+  capWorker = new Worker('whisper-worker.js?v=3', { type: 'module' });
   capWorkerModel = model;
   capWorkerReady = new Promise((res, rej) => {
     capWorker.onmessage = (e) => {
@@ -486,5 +486,12 @@ function importSrt(text) {
   toast(`تم استيراد ${cues.length} سطر ترجمة`, 'success');
 }
 
-buildCaptionsUI();
+try {
+  if (typeof CAPTION_STYLES === 'undefined' || typeof drawCaption === 'undefined') throw new Error('stale app.js');
+  buildCaptionsUI();
+} catch (e) {
+  console.error(e);
+  const box = document.getElementById('tab-captions');
+  if (box) box.innerHTML = '<div class="cap-hero">⚠️ لم يتم تحميل أداة الترجمة بشكل كامل.<br><span class="small">اضغط <b>Ctrl + Shift + R</b> (أو Ctrl + F5) لتحديث الصفحة بالكامل.</span><br><span class="muted small">' + String(e && e.message || e).replace(/</g, '&lt;') + '</span></div>';
+}
 Object.assign(window.__studio || {}, { runCaptions, exportSrt, importSrt, groupLines, toWords });
