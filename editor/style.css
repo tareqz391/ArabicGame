@@ -284,3 +284,30 @@ kbd { background: var(--panel3); border: 1px solid var(--line); border-bottom-wi
   .timeline { height: 340px; }
   .toasts { bottom: 20px; }
 }
+
+/* ---------- Auto captions ---------- */
+.cap-hero { background: linear-gradient(135deg, rgba(124,58,237,.3), rgba(34,211,238,.15)); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 12px; line-height: 1.8; }
+.cap-form { display: flex; flex-direction: column; gap: 12px; }
+.cap-form select, .cap-form input[type=password] { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; width: 100%; }
+.cap-form .field > label { color: var(--muted); font-size: 12px; }
+.cap-form a { color: var(--accent2); }
+.cap-styles { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.cap-style { background: #05070b; border: 2px solid var(--line); border-radius: 10px; padding: 8px 4px 4px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cap-style:hover { border-color: #4b5563; }
+.cap-style.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,58,237,.3); }
+.cap-style small { color: var(--muted); font-size: 10px; }
+.cs-demo { font-weight: 800; font-size: 13px; color: #fff; text-shadow: 0 1px 2px #000; white-space: nowrap; }
+.cs-demo i { font-style: normal; padding: 0 2px; border-radius: 4px; }
+.cs-karaoke i:nth-child(-n+2) { color: #facc15; }
+.cs-highlight i:nth-child(2) { background: #7c3aed; }
+.cs-pop i:nth-child(3) { visibility: hidden; }
+.cs-pop i:nth-child(2) { color: #22d3ee; font-size: 15px; }
+.cs-focus i { opacity: .4; }
+.cs-focus i:nth-child(2) { opacity: 1; color: #4ade80; }
+.cs-plain { background: rgba(0,0,0,.7); padding: 1px 6px; border-radius: 4px; }
+.cap-go { border: 0; width: 100%; font-size: 14px; padding: 12px; }
+.cap-go:disabled { opacity: .5; cursor: wait; }
+.cap-progress { display: flex; flex-direction: column; gap: 6px; }
+#capBar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .3s; }
+.cap-tools { display: flex; flex-wrap: wrap; gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+.cap-tools .mini-btn { cursor: pointer; }

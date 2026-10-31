@@ -31,9 +31,10 @@
   <!-- مكتبة الوسائط -->
   <aside class="panel library">
     <nav class="tabs">
-      <button class="tab active" data-tab="media">🎞️ الوسائط</button>
-      <button class="tab" data-tab="text">🔤 النصوص</button>
-      <button class="tab" data-tab="elements">🎨 العناصر</button>
+      <button class="tab active" data-tab="media">🎞️ وسائط</button>
+      <button class="tab" data-tab="text">🔤 نصوص</button>
+      <button class="tab" data-tab="captions">📝 ترجمة</button>
+      <button class="tab" data-tab="elements">🎨 عناصر</button>
     </nav>
     <div class="tab-body active" id="tab-media">
       <label class="import-btn">➕ استيراد ملفات
@@ -46,6 +47,7 @@
       <p class="muted">انقر على نمط لإضافته عند مؤشر التشغيل.</p>
       <div id="textPresets" class="preset-grid"></div>
     </div>
+    <div class="tab-body" id="tab-captions"></div>
     <div class="tab-body" id="tab-elements">
       <h4>خلفيات ملونة</h4>
       <div id="colorPresets" class="color-grid"></div>
@@ -189,5 +191,6 @@
 <div id="dropOverlay" class="drop-overlay" hidden><div>أفلت الملفات للاستيراد</div></div>
 
 <script src="app.js"></script>
+<script src="captions.js"></script>
 </body>
 </html>

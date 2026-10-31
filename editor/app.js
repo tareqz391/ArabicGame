@@ -656,6 +656,106 @@ function computeAnim(clip, t) {
   if (clip.kenBurns) r.scale *= 1 + 0.15 * clamp(local / clip.duration, 0, 1);
   return r;
 }
+/* ---------- الترجمة المتحركة (كلمة بكلمة) ---------- */
+const CAPTION_STYLES = [
+  ['karaoke', 'كاريوكي — تلوين الكلمة المنطوقة'],
+  ['highlight', 'تمييز الكلمة بخلفية ملونة'],
+  ['pop', 'كلمة بكلمة (ظهور تدريجي)'],
+  ['focus', 'تركيز على الكلمة الحالية'],
+  ['plain', 'كلاسيكي ثابت'],
+];
+const easeOutBack = (p) => 1 + 2.70158 * Math.pow(p - 1, 3) + 1.70158 * Math.pow(p - 1, 2);
+function captionWords(clip) {
+  const off = clip.offset || 0, end = off + clip.duration;
+  return (clip.words || []).filter((w) => w.end > off + 0.01 && w.start < end - 0.01);
+}
+function rewordCaption(c, content) {
+  const toks = String(content).split(/\s+/).filter(Boolean);
+  const old = c.words || [];
+  if (toks.length === old.length) { old.forEach((w, i) => (w.text = toks[i])); return; }
+  const s0 = old.length ? old[0].start : c.offset || 0;
+  const e0 = old.length ? old[old.length - 1].end : (c.offset || 0) + c.duration;
+  const total = toks.reduce((a, t) => a + t.length + 1, 0) || 1;
+  let acc = 0;
+  c.words = toks.map((t) => {
+    const st = s0 + ((e0 - s0) * acc) / total;
+    acc += t.length + 1;
+    return { text: t, start: st, end: s0 + ((e0 - s0) * acc) / total };
+  });
+}
+function drawCaption(clip, s, lt) {
+  const tx = clip.text, cap = clip.caption || { style: 'plain', hl: '#facc15' };
+  const words = captionWords(clip);
+  ctx.scale(s, s);
+  ctx.font = textFont(tx);
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  const rtl = isArabic(words.map((w) => w.text).join(' '));
+  ctx.direction = rtl ? 'rtl' : 'ltr';
+  const space = ctx.measureText(' ').width;
+  const ws = words.map((w) => ({ ...w, w: ctx.measureText(w.text).width }));
+  const maxW = (project.width * 0.9) / Math.max(0.05, s);
+  const lines = [];
+  let cur = [], cw = 0;
+  for (const w of ws) {
+    const add = (cur.length ? space : 0) + w.w;
+    if (cur.length && cw + add > maxW) { lines.push({ words: cur, w: cw }); cur = []; cw = 0; }
+    cw += (cur.length ? space : 0) + w.w;
+    cur.push(w);
+  }
+  if (cur.length) lines.push({ words: cur, w: cw });
+  if (!lines.length) return { w: 0, h: 0 };
+  let curIdx = -1;
+  ws.forEach((w, i) => { if (w.start <= lt) curIdx = i; });
+  const lh = tx.size * tx.lineHeight, totalH = lines.length * lh;
+  const boxW = Math.max(...lines.map((l) => l.w)), pad = tx.size * 0.35;
+  if (tx.bgOpacity > 0) {
+    ctx.save();
+    ctx.globalAlpha *= tx.bgOpacity;
+    ctx.fillStyle = tx.bg;
+    roundRect(ctx, -boxW / 2 - pad, -totalH / 2 - pad * 0.5, boxW + pad * 2, totalH + pad, pad * 0.5);
+    ctx.fill();
+    ctx.restore();
+  }
+  let idx = 0;
+  lines.forEach((ln, li) => {
+    const y = -totalH / 2 + lh * (li + 0.5);
+    let cursor = rtl ? ln.w / 2 : -ln.w / 2;
+    for (const w of ln.words) {
+      const i = idx++;
+      const cx = rtl ? cursor - w.w / 2 : cursor + w.w / 2;
+      cursor += rtl ? -(w.w + space) : w.w + space;
+      const spoken = i <= curIdx, active = i === curIdx;
+      let color = tx.color, alpha = 1, sc = 1, boxBg = null;
+      if (cap.style === 'karaoke') { if (spoken) color = cap.hl; if (active) sc = 1.08; }
+      else if (cap.style === 'highlight') { if (active) boxBg = cap.hl; }
+      else if (cap.style === 'pop') {
+        if (!spoken) continue;
+        if (active) { sc = 0.6 + 0.4 * easeOutBack(clamp((lt - w.start) / 0.18, 0, 1)); color = cap.hl; }
+      } else if (cap.style === 'focus') { if (active) { color = cap.hl; sc = 1.06; } else alpha = 0.4; }
+      ctx.save();
+      ctx.translate(cx, y);
+      ctx.scale(sc, sc);
+      ctx.globalAlpha *= alpha;
+      if (boxBg) {
+        ctx.fillStyle = boxBg;
+        roundRect(ctx, -w.w / 2 - tx.size * 0.18, -tx.size * 0.62, w.w + tx.size * 0.36, tx.size * 1.24, tx.size * 0.22);
+        ctx.fill();
+      }
+      if (tx.glow) { ctx.shadowColor = color; ctx.shadowBlur = tx.size * 0.45; }
+      else if (tx.shadow) { ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = tx.size * 0.12; ctx.shadowOffsetY = tx.size * 0.04; }
+      if (tx.strokeWidth > 0) {
+        ctx.lineWidth = tx.strokeWidth; ctx.strokeStyle = tx.stroke; ctx.lineJoin = 'round';
+        ctx.strokeText(w.text, 0, 0);
+        if (!tx.glow) ctx.shadowColor = 'transparent';
+      }
+      ctx.fillStyle = color;
+      ctx.fillText(w.text, 0, 0);
+      ctx.restore();
+    }
+  });
+  return { w: (boxW + pad * 2) * s, h: (totalH + pad) * s };
+}
 const textFont = (tx) => `${tx.italic ? 'italic ' : ''}${tx.bold ? '700' : '400'} ${tx.size}px "${tx.font}", "Cairo", sans-serif`;
 function drawText(clip, s, reveal) {
   const tx = clip.text;
@@ -723,7 +823,7 @@ function drawClip(clip, t) {
   const s = clip.scale * a.scale;
   let bw, bh;
   if (clip.type === 'text') {
-    const sz = drawText(clip, s, a.reveal);
+    const sz = clip.words ? drawCaption(clip, s, t - clip.start + (clip.offset || 0)) : drawText(clip, s, a.reveal);
     bw = sz.w; bh = sz.h;
   } else if (clip.type === 'color') {
     bw = W * s; bh = H * s;
@@ -1077,7 +1177,7 @@ function initTimelineInteraction() {
         ns = clamp(ns, minStart, maxStart);
         c.start = ns;
         c.duration = orig.start + orig.duration - ns;
-        if (hasSource(c)) c.offset = Math.max(0, orig.offset + (ns - orig.start) * orig.speed);
+        if (hasSource(c) || c.words) c.offset = Math.max(0, orig.offset + (ns - orig.start) * orig.speed);
       } else {
         const maxEnd = orig.start + (srcDur === Infinity ? Infinity : (srcDur - orig.offset) / orig.speed);
         let ne = orig.start + orig.duration + dx;
@@ -1269,6 +1369,14 @@ function splitAtPlayhead() {
     nc.start = t;
     nc.duration = c.duration - left;
     if (hasSource(c)) nc.offset = c.offset + left * c.speed;
+    if (c.words) { // تقسيم كلمات الترجمة بين الجزأين
+      const cut = c.offset + left;
+      nc.offset = cut;
+      c.words = c.words.filter((w) => (w.start + w.end) / 2 < cut);
+      nc.words = nc.words.filter((w) => (w.start + w.end) / 2 >= cut);
+      c.text.content = c.words.map((w) => w.text).join(' ');
+      nc.text.content = nc.words.map((w) => w.text).join(' ');
+    }
     nc.animIn = 'none'; nc.audioFadeIn = 0;
     c.duration = left;
     c.animOut = 'none'; c.audioFadeOut = 0;
@@ -1329,7 +1437,7 @@ function addTrack(kind) {
 }
 
 /* ============================ لوحة الخصائص ============================ */
-const openSections = new Set(['timing', 'text', 'transform', 'filters', 'anim', 'audio', 'project', 'stats', 'color']);
+const openSections = new Set(['caption', 'timing', 'text', 'transform', 'filters', 'anim', 'audio', 'project', 'stats', 'color']);
 const fmtNum = (v) => String(round(+v, 2));
 const UI = {
   section(key, title, body) {
@@ -1379,6 +1487,13 @@ function renderInspector() {
   html += UI.section('timing', '⏱ التوقيت',
     `<div class="row2">${UI.number('البداية (ث)', 'start', c.start)}${UI.number('المدة (ث)', 'duration', c.duration)}</div>` +
     (hasSource(c) ? `<div class="muted small">بداية القص داخل الملف: <span dir="ltr">${fmtTime(c.offset)}</span></div>` : ''));
+  if (c.type === 'text' && c.words) {
+    const cap = c.caption || { style: 'karaoke', hl: '#facc15' };
+    html += UI.section('caption', '📝 الترجمة',
+      `<p class="muted small">صحّح أي كلمة من خانة «المحتوى» بالأسفل؛ إذا بقي عدد الكلمات نفسه يحتفظ كل كلمة بتوقيتها الدقيق.</p>` +
+      `<div class="row2">${UI.select('نمط الحركة', 'caption.style', cap.style, CAPTION_STYLES)}${UI.color('لون التمييز', 'caption.hl', cap.hl)}</div>` +
+      `<div class="insp-actions"><button class="mini-btn" data-action="caption-apply-all">🎯 طبّق هذا الشكل على كل الترجمة</button></div>`);
+  }
   if (c.type === 'text') {
     const tx = c.text;
     html += UI.section('text', '🔤 النص',
@@ -1456,6 +1571,13 @@ function applyClipProp(c, prop, v) {
       c.duration = v;
       return true;
     case 'start': c.start = Math.max(0, v); return true;
+    case 'text.content':
+      c.text.content = v;
+      if (c.words) rewordCaption(c, v);
+      return true;
+    case 'caption.style': case 'caption.hl':
+      setPath(c, prop, v);
+      return false;
     case 'animInDur': case 'animOutDur': case 'audioFadeIn': case 'audioFadeOut':
       c[prop] = clamp(v, 0, 60); return false;
   }
@@ -1527,6 +1649,19 @@ function initInspector() {
     if (a === 'reset-filters') c.filters = { ...DEFAULT_FILTERS };
     if (a === 'preset') c.filters = { ...DEFAULT_FILTERS, ...FILTER_PRESETS[+b.dataset.i][1] };
     if (a === 'fade-both') Object.assign(c, { animIn: 'fade', animOut: 'fade', animInDur: 0.6, animOutDur: 0.6 });
+    if (a === 'caption-apply-all' && c.words) {
+      let n = 0;
+      for (const o of project.clips) {
+        if (o === c || !o.words) continue;
+        if (c.captionGroup && o.captionGroup !== c.captionGroup) continue;
+        const content = o.text.content;
+        o.text = { ...deepClone(c.text), content };
+        o.caption = deepClone(c.caption);
+        Object.assign(o, { x: c.x, y: c.y, scale: c.scale, rotation: c.rotation, opacity: c.opacity, animIn: c.animIn, animOut: c.animOut, animInDur: c.animInDur, animOutDur: c.animOutDur });
+        n++;
+      }
+      toast(`تم تطبيق الشكل على ${n + 1} سطر`, 'success');
+    }
     changed();
   });
 }
